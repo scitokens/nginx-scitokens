@@ -1,0 +1,118 @@
+
+from flask import Flask, request, Response
+import scitokens
+import ConfigParser
+import argparse
+import traceback
+app = Flask(__name__)
+
+g_authorized_issuers = {}
+
+@app.route('/auth')
+def flask_listener():
+    # Convert the operation to something that the token will know,
+    # like read or write
+    orig_op = request.headers.get('X-Original-Method')
+    op = ""
+    if orig_op == "GET":
+        op = 'read'
+    elif orig_op in ["PUT", "POST", "DELETE", "MKCOL", "COPY", "MOVE"]:
+        op = 'write'
+    
+    # Look at the path as well
+    orig_path = request.headers.get('X-Original-URI')
+    
+    # Convert the token to a SciToken (also check for errors with the token)
+    if 'Authorization' not in request.headers:
+        resp = Response("No Authorization header")
+        resp.headers['WWW-Authenticate'] = 'Bearer realm="scitokens"'
+        return resp, 401
+    raw_token = request.headers['Authorization'].split(" ", 1)[1]
+    
+    # Convert the token
+    # Send a 401 error code if there is any problem
+    try:
+        token = scitokens.SciToken.deserialize(raw_token, audience="flask")
+    except Exception as e:
+        resp = Response("No Authorization header")
+        resp.headers['WWW-Authenticate'] = 'Bearer realm="scitokens",error="invalid_token",error_description="{0}"'.format(str(e))
+        traceback.print_exc()
+        return resp, 401
+    
+    (successful, message) = test_operation_path(op, orig_path, token)
+    if successful:
+        return message, 200
+    else:
+        return message, 403
+    
+
+def test_operation_path(op, path, token):
+    """
+    Test whether an operation and path is allowed by this scitoken.
+    
+    :returns: (successful, message) true if the scitoken allows for this path & op, else false
+    """
+    # Setup a SciToken Enforcer
+    if token['iss'] not in g_authorized_issuers:
+        return (False, "Issuer not in configuration")
+    
+    enforcer = scitokens.scitokens.Enforcer(token['iss'], audience='flask')
+    try:
+        if enforcer.test(token, op, path):
+            return (True, "")
+        else:
+            return (False, "Path not allowed")
+    except scitokens.scitokens.EnforcementError as e:
+        return (False, str(e))
+        
+    return (True, "")
+    
+
+# From xrootd-scitokens, we want the same configuration
+def config(fname):
+    print "Trying to load configuration from %s" % fname
+    cp = ConfigParser.SafeConfigParser()
+    try:
+        with open(fname, "r") as fp:
+            cp.readfp(fp)
+    except IOError as ie:
+        if ie.errno == errno.ENOENT:
+            return
+        raise
+    for section in cp.sections():
+        if not section.lower().startswith("issuer "):
+            continue
+        if 'issuer' not in cp.options(section):
+            print "Ignoring section %s as it has no `issuer` option set." % section
+        if 'base_path' not in cp.options(section):
+            print "Ignoring section %s as it has no `base_path` option set." % section
+        issuer = cp.get(section, 'issuer')
+        base_path = cp.get(section, 'base_path')
+        base_path = scitokens.urltools.normalize_path(base_path)
+        issuer_info = g_authorized_issuers.setdefault(issuer, {})
+        issuer_info['base_path'] = base_path
+        if 'map_subject' in cp.options(section):
+            issuer_info['map_subject'] = cp.getboolean(section, 'map_subject')
+        print "Configured token access for %s (issuer %s): %s" % (section, issuer, str(issuer_info))
+
+
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Authenticate HTTP Requests')
+    parser.add_argument('-c', '--config', dest='config', type=str, 
+                        default="/etc/scitokens/authenticator.cfg",
+                        help="Location of the configuration file")
+
+    args = parser.parse_args()
+    
+    # Read in configuration
+    config(args.config)
+    
+    # Set up listener for events
+    app.run(host='localhost', port=1234)
+    
+    pass
+
+if __name__ == "__main__":
+    main()
