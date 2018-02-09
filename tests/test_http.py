@@ -7,9 +7,8 @@ import json
 
 demo_json = { 
 "payload": {
-'aud': 'test',
-'scp': 'read:/protected',
-'aud': 'flask'
+'scp': 'read:/stuff',
+'aud': 'testing'
 },
 "header": {
 'alg': 'RS256',
@@ -31,8 +30,8 @@ print the_page
 # Make a connection to the local flask instance
 req = urllib2.Request("http://localhost:1234/auth")
 
-req.add_header('X-Original-Method', 'GET')
-req.add_header('X-Original-URI', '/protected/stuff')
+req.add_header('X-Original-Method', 'PUT')
+req.add_header('X-Original-URI', '/protected/stuff/is/cool')
 req.add_header('Authorization', 'Bearer {0}'.format(the_page))
 resp = urllib2.urlopen(req)
 

@@ -7,6 +7,7 @@ import traceback
 app = Flask(__name__)
 
 g_authorized_issuers = {}
+g_global_audience = ""
 
 @app.route('/auth')
 def flask_listener():
@@ -32,7 +33,7 @@ def flask_listener():
     # Convert the token
     # Send a 401 error code if there is any problem
     try:
-        token = scitokens.SciToken.deserialize(raw_token, audience="flask")
+        token = scitokens.SciToken.deserialize(raw_token, audience=g_global_audience)
     except Exception as e:
         resp = Response("No Authorization header")
         resp.headers['WWW-Authenticate'] = 'Bearer realm="scitokens",error="invalid_token",error_description="{0}"'.format(str(e))
@@ -55,14 +56,27 @@ def test_operation_path(op, path, token):
     # Setup a SciToken Enforcer
     if token['iss'] not in g_authorized_issuers:
         return (False, "Issuer not in configuration")
+    issuer = token['iss']
+    base_path = g_authorized_issuers[issuer]['base_path']
     
-    enforcer = scitokens.scitokens.Enforcer(token['iss'], audience='flask')
+    # The path above should consist of"
+    # $base_path + / + $auth_path + / + $request_path = path
+    if not path.startswith(base_path):
+        print "Requested path does not start"
+        return (False, "The requested path does not start with the base path")
+    
+    # Now remove the base path so we just get the auth_path + request_path
+    auth_requested = path.replace(base_path, "", 1)
+    print auth_requested
+    
+    enforcer = scitokens.scitokens.Enforcer(token['iss'], audience=g_global_audience)
     try:
-        if enforcer.test(token, op, path):
+        if enforcer.test(token, op, auth_requested):
             return (True, "")
         else:
             return (False, "Path not allowed")
     except scitokens.scitokens.EnforcementError as e:
+        print e
         return (False, str(e))
         
     return (True, "")
@@ -94,6 +108,9 @@ def config(fname):
         if 'map_subject' in cp.options(section):
             issuer_info['map_subject'] = cp.getboolean(section, 'map_subject')
         print "Configured token access for %s (issuer %s): %s" % (section, issuer, str(issuer_info))
+    
+    global g_global_audience
+    g_global_audience = cp.get("Global", "audience")
 
 
 
