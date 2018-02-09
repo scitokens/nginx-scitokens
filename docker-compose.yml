@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  nginx-scitokens:
+    build: .
+    container_name: nginx-scitokens
+    volumes:
+      - ./certs/live/hostname/:/etc/letsencrypt/live
+      - ./data:/data
+    ports:
+      - 80:80
+      - 443:443

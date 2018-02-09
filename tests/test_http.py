@@ -7,7 +7,7 @@ import json
 
 demo_json = { 
 "payload": {
-'scp': 'read:/stuff',
+'scp': 'write:/stuff',
 'aud': 'testing'
 },
 "header": {
@@ -28,10 +28,11 @@ the_page = response.read()
 print the_page
 
 # Make a connection to the local flask instance
-req = urllib2.Request("http://localhost:1234/auth")
+req = urllib2.Request("https://hostname:443/protected/stuff/blah", "this is the data")
+req.get_method = lambda: 'PUT'
 
-req.add_header('X-Original-Method', 'PUT')
-req.add_header('X-Original-URI', '/protected/stuff/is/cool')
+#req.add_header('X-Original-Method', 'PUT')
+#req.add_header('X-Original-URI', '/protected/stuff/is/cool')
 req.add_header('Authorization', 'Bearer {0}'.format(the_page))
 resp = urllib2.urlopen(req)
 
