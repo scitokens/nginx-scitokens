@@ -6,9 +6,10 @@ to resources given a [SciToken](https://scitokens.org/).
 
 This repo also includes the necessary configuration for an NGINX webserver to provide WebDav access using SciTokens for authorization.  With this configuration, you may provide authenticated access to write (PUT) or read (GET) on the webserver.
 
+Authorizer configuration
+------------------------
 
-Authenticator configuration
----------------------------
+The Authorizer works along with the webserver, NGINX in this case, to determine if a specific action is authorized given a SciToken.  
 
 An example configuration is provided in [configs/authorizer.cfg](configs/authorizer.cfg).
 
@@ -30,6 +31,8 @@ For example, imagine attempting to access the resource at `/protected/important/
 * The `base_path` is shown in the configuration above, which is `/protected`
 * The `scp` (scope) in the token must be at the least `read:/important`
 * The URL that is requested must be `/protected/important/data`
+
+The configuration above should not be used in production.  Since it is using the demo.scitokens.org issuer, anyone can create a scitoken from that issuer that could read or write to your server.
 
 Installation
 ------------
@@ -64,5 +67,16 @@ From the command line, the command would be:
     sudo docker run --net=host -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data scitokens/nginx-scitokens
     
 In this command, it would expect the LetsEncrypt command from before to be executed.  The certificates should be in `./certs`.  Further, it will read / write all data from the `./data` directory.
+
+Testing Your Installation
+-------------------------
+
+Testing your installation is dependent on a lot of factors:
+
+* The issuer that you will be using
+* The directory structure
+* Permissions that should be tested (read/write)
+
+But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a provided script.  You will have to edit the script, near the top, with some values that pertain to your server.  You should only have to edit the hostname.
 
 

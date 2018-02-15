@@ -1,19 +1,23 @@
-
+#!/usr/bin/python
 
 import urllib2
 import urllib
 import json
 # Get a scitoken from the demo.scitokens.org service
 
+hostname = "hostname"
+request_path = "/protected/stuff/blah"
+scope = "write:/stuff"
+
 demo_json = { 
-"payload": {
-'scp': 'write:/stuff',
-'aud': 'testing'
-},
-"header": {
-'alg': 'RS256',
-'typ': 'JWT'
-}
+    "payload": {
+        'scp': scope,
+        'aud': 'testing'
+    },
+    "header": {
+        'alg': 'RS256',
+        'typ': 'JWT'
+    }
 }
 
 data = json.dumps({
@@ -28,7 +32,7 @@ the_page = response.read()
 print the_page
 
 # Make a connection to the local flask instance
-req = urllib2.Request("https://hostname:443/protected/stuff/blah", "this is the data")
+req = urllib2.Request("https://{0}:443{1}".format(hostname, request_path), "this is the data")
 req.get_method = lambda: 'PUT'
 
 #req.add_header('X-Original-Method', 'PUT')
