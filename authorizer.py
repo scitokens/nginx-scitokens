@@ -118,7 +118,7 @@ def main():
     
     parser = argparse.ArgumentParser(description='Authenticate HTTP Requests')
     parser.add_argument('-c', '--config', dest='config', type=str, 
-                        default="/etc/scitokens/authenticator.cfg",
+                        default="/etc/scitokens/authorizer.cfg",
                         help="Location of the configuration file")
 
     args = parser.parse_args()
