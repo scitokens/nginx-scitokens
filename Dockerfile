@@ -1,7 +1,7 @@
 FROM nginx:stable
 
 # Install python
-RUN apt-get update && apt-get -y install python-dev build-essential python-pip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y install python-dev build-essential python-pip certbot && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
