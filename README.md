@@ -1,14 +1,16 @@
-SciTokens Web Authenticator
+SciTokens Web Authorizer
 ===========================
 
-This authenticator is designed to work with a webserver to permit or deny access
-to resources given a SciToken.
+This Authorizer is designed to work with a webserver to permit or deny access
+to resources given a [SciToken](https://scitokens.org/).
+
+This repo also includes the necessary configuration for an NGINX webserver to provide WebDav access using SciTokens for authorization.  With this configuration, you may provide authenticated access to write (PUT) or read (GET) on the webserver.
 
 
 Authenticator configuration
 ---------------------------
 
-An example configuration is provided in [configs/authenticator.cfg](configs/authenticator.cfg).
+An example configuration is provided in [configs/authorizer.cfg](configs/authorizer.cfg).
 
     [Global]
     audience = testing
@@ -29,9 +31,38 @@ For example, imagine attempting to access the resource at `/protected/important/
 * The `scp` (scope) in the token must be at the least `read:/important`
 * The URL that is requested must be `/protected/important/data`
 
-NGINX Configuration
+Installation
+------------
+
+### Securing Server with LetsEncrypt
+
+SciTokens are passed unencrypted in the HTTP headers, therefore it is recommended to encrypt the connection with HTTPS.  Here we will discuss how to use [LetsEncrypt](https://letsencrypt.org/) to secure your server.  If you already have an SSL certificate that you would like to use, you may skip this section.
+
+You may run certbot directly from docker with the following command.  You will need to replace the `email` and the domain (`-d` option).  The domain should be the public hostname of the server that will be running this service.
+
+    sudo docker run -v `pwd`/certs:/etc/letsencrypt --net=host --rm certbot/certbot certonly --standalone --email <email> -d <domain> --agree-tos
+
+After you run this command, it should report success and your certificates will be located in the `certs` directory.  To renew the certificate, run the command:
+
+    sudo docker run -v `pwd`/certs:/etc/letsencrypt --net=host --rm certbot/certbot renew --standalone --email <email> -d <domain> --agree-tos
+
+Full instructions on how to run [CertBot](https://certbot.eff.org/) is available on the official webiste.
+
+### NGINX Configuration
+
+An example NGINX configuration is provided in [nginx.conf](configs/nginx.conf) within the configs directory.  It will enable HTTPS and use the provided python script for authorization.
+
+If you would like to built-in NGINX, the configuration should replace the existing `nginx.conf` configuration file.
+
+Running from Docker
 -------------------
 
-An example nginx configuration is shown in [nginx.conf](configs/nginx.conf) within the configs directory.
+A [NGINX-SciTokens](https://hub.docker.com/r/scitokens/nginx-scitokens/) Docker container is provided.  You may run the command directly using `docker`, or use something like [docker-compose](https://docs.docker.com/compose/) to manage the container for you.  An example [`docker-compose.yml`](docker-compose.yml) file is provided.
+
+From the command line, the command would be:
+
+    sudo docker run --net=host -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data scitokens/nginx-scitokens
+    
+In this command, it would expect the LetsEncrypt command from before to be executed.  The certificates should be in `./certs`.  Further, it will read / write all data from the `./data` directory.
 
 

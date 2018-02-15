@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 RUN pip install --upgrade pip && pip install -r /app/requirements.txt
 
-COPY configs/authenticator.cfg /etc/scitokens-auth/authenticator.cfg
+COPY configs/authorizer.cfg /etc/scitokens-auth/authorizer.cfg
 COPY configs/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80 443
