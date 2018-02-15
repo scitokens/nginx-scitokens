@@ -2,8 +2,7 @@ version: '2'
 
 services:
   nginx-scitokens:
-    build: .
-    container_name: nginx-scitokens
+    container_name: scitokens/nginx-scitokens
     volumes:
       - ./certs/:/etc/letsencrypt
       - ./data:/data
