@@ -21,7 +21,7 @@ An example configuration is provided in [configs/authorizer.cfg](configs/authori
     issuer = https://demo.scitokens.org
     base_path = /protected
 
-* `audience`: The audience that the service should respond.  Any tokens attempting to access this resource must have exactly the same audience.
+* `audience`: The audience that the service should respond.  Any tokens attempting to access this resource must have exactly the same audience.  This can be a string, a comma separated list, or empty.  A list of audiences will match tokens with any value in the list.  An empty string will only allow tokens with no audience (`aud`) set.
 * `Issuer`: A list of possible multiple issuers which will be accepted to access this resource.
 * `issuer`: The URL path of the issuer which will respond with the OAuth public key retrieval.
 * `base_path`: The base path for which this issuer may access.  All URL's must be prepended by this base_path.  But, tokens should not include this base path.

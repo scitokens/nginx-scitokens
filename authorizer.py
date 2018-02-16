@@ -4,6 +4,7 @@ import scitokens
 import ConfigParser
 import argparse
 import traceback
+import re
 app = Flask(__name__)
 
 g_authorized_issuers = {}
@@ -98,8 +99,10 @@ def config(fname):
             continue
         if 'issuer' not in cp.options(section):
             print "Ignoring section %s as it has no `issuer` option set." % section
+            continue
         if 'base_path' not in cp.options(section):
             print "Ignoring section %s as it has no `base_path` option set." % section
+            continue
         issuer = cp.get(section, 'issuer')
         base_path = cp.get(section, 'base_path')
         base_path = scitokens.urltools.normalize_path(base_path)
@@ -111,6 +114,11 @@ def config(fname):
     
     global g_global_audience
     g_global_audience = cp.get("Global", "audience")
+    if ',' in g_global_audience:
+        # Split the audience list
+        g_global_audience = re.split("\s*,\s*", g_global_audience)
+        print g_global_audience
+    
 
 
 
