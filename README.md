@@ -6,6 +6,12 @@ to resources given a [SciToken](https://scitokens.org/).
 
 This repo also includes the necessary configuration for an NGINX webserver to provide WebDav access using SciTokens for authorization.  With this configuration, you may provide authenticated access to write (PUT) or read (GET) on the webserver.
 
+Requirements
+------------
+
+* Public Hostname
+* Port 80 and / or 443
+
 Authorizer configuration
 ------------------------
 
@@ -43,9 +49,9 @@ SciTokens are passed unencrypted in the HTTP headers, therefore it is recommende
 
 You may run certbot directly from docker with the following command.  You will need to replace the `email` and the domain (`-d` option).  The domain should be the public hostname of the server that will be running this service.
 
-    sudo docker run -v `pwd`/certs:/etc/letsencrypt --net=host --rm certbot/certbot certonly --standalone --email <email> -d <domain> --agree-tos
+    sudo docker run --privileged -v `pwd`/certs:/etc/letsencrypt --net=host --rm certbot/certbot certonly --standalone --email <email> -d <domain> --agree-tos
 
-After you run this command, it should report success and your certificates will be located in the `certs` directory.  To renew the certificate, run the command:
+After you run this command, it should report success and your certificates will be located in the `certs` directory.  To renew the certificate later, run the command:
 
     sudo docker run -v `pwd`/certs:/etc/letsencrypt --net=host --rm certbot/certbot renew --standalone --email <email> -d <domain> --agree-tos
 
@@ -77,6 +83,16 @@ Testing your installation is dependent on a lot of factors:
 * The directory structure
 * Permissions that should be tested (read/write)
 
-But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a provided script.  You will have to edit the script, near the top, with some values that pertain to your server.  You should only have to edit the hostname.
+But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a [provided script](test/test_http.py).  You will have to edit the script, near the top, with some values that pertain to your server.  You should only have to edit the hostname.
+
+Also, you will need to create a few directories in order for the test script to work.  First, create the `www` directory under `data`.
+
+    sudo mkdir -p data/www/protected
+
+Then, make the directory world readable (this is only a test, after all).  Not a great solution.  The token issuer will protect directories with the scopes (`scp`) attribute.
+
+    sudo chown 777 data/www/protected
+
+Modify the test script with the hostname and scopes necessary.  At the least, you will need to modify the hostname.
 
 
