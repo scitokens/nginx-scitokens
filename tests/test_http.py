@@ -3,6 +3,10 @@
 import urllib2
 import urllib
 import json
+import requests
+import random
+import tempfile
+import os
 # Get a scitoken from the demo.scitokens.org service
 
 hostname = "hostname"
@@ -31,8 +35,10 @@ response = urllib2.urlopen(req)
 the_page = response.read()
 print the_page
 
+url = "https://{0}:443{1}".format(hostname, request_path)
+
 # Make a connection to the local flask instance
-req = urllib2.Request("https://{0}:443{1}".format(hostname, request_path), "this is the data")
+req = urllib2.Request(url, "this is the data")
 req.get_method = lambda: 'PUT'
 
 #req.add_header('X-Original-Method', 'PUT')
@@ -41,3 +47,15 @@ req.add_header('Authorization', 'Bearer {0}'.format(the_page))
 resp = urllib2.urlopen(req)
 
 content = resp.read()
+
+print "Creating a random large file to upload"
+headers = { 'Authorization': 'Bearer {0}'.format(the_page)}
+
+fout = tempfile.NamedTemporaryFile(delete=False)
+fout.write(os.urandom(1024 * 1024 * 50))
+fout.close()
+files = { 'file': open(fout.name) }
+url = url + "_big"
+requests.put(url, files=files, headers=headers)
+
+os.unlink(fout.name)
