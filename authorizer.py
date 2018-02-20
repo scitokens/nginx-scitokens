@@ -5,6 +5,8 @@ import ConfigParser
 import argparse
 import traceback
 import re
+import logging
+logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
 g_authorized_issuers = {}
@@ -28,6 +30,7 @@ def flask_listener():
     if 'Authorization' not in request.headers:
         resp = Response("No Authorization header")
         resp.headers['WWW-Authenticate'] = 'Bearer realm="scitokens"'
+        logging.error("No Authorization header presented")
         return resp, 401
     raw_token = request.headers['Authorization'].split(" ", 1)[1]
     
@@ -38,13 +41,20 @@ def flask_listener():
     except Exception as e:
         resp = Response("No Authorization header")
         resp.headers['WWW-Authenticate'] = 'Bearer realm="scitokens",error="invalid_token",error_description="{0}"'.format(str(e))
+        logging.exception("Failed to deserialize SciToken")
         traceback.print_exc()
         return resp, 401
     
     (successful, message) = test_operation_path(op, orig_path, token)
     if successful:
+        if 'jti' in token._claims:
+            logging.info("Allowed token with Token ID: {0}".format(str(token['jti'])))
         return message, 200
     else:
+        if 'jti' in token._claims:
+            logging.error("Failed to authenticate SciToken ID {0} because {1}".format(token['jti'], message))
+        else:
+            logging.error("Failed to authenticate SciToken because {1}".format(message))
         return message, 403
     
 
@@ -63,7 +73,7 @@ def test_operation_path(op, path, token):
     # The path above should consist of"
     # $base_path + / + $auth_path + / + $request_path = path
     if not path.startswith(base_path):
-        print "Requested path does not start"
+        print "Requested path does not start with base_path"
         return (False, "The requested path does not start with the base path")
     
     # Now remove the base path so we just get the auth_path + request_path
