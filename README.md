@@ -50,7 +50,7 @@ SciTokens are passed unencrypted in the HTTP headers, therefore it is recommende
 
 You may run certbot directly from docker with the following command.  You will need to replace the `email` and the domain (`-d` option).  The domain should be the public hostname of the server that will be running this service.
 
-    sudo docker run --privileged -v `pwd`/certs:/etc/letsencrypt --net=host --rm certbot/certbot certonly --standalone --email <email> -d <domain> --agree-tos
+    sudo docker run --privileged -v `pwd`/certs:/etc/letsencrypt -p 80:80 --rm certbot/certbot certonly --standalone --email <email> -d <domain> --agree-tos
 
 After you run this command, it should report success and your certificates will be located in the `certs` directory.  To renew the certificate later, run the command:
 
@@ -71,7 +71,7 @@ A [NGINX-SciTokens](https://hub.docker.com/r/scitokens/nginx-scitokens/) Docker 
 
 From the command line, the command would be:
 
-    sudo docker run --privileged --net=host -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data scitokens/nginx-scitokens
+    sudo docker run --privileged -p 443:443 -p 80:80 -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data scitokens/nginx-scitokens
     
 In this command, it would expect the LetsEncrypt command from before to be executed.  The certificates should be in `./certs`.  Further, it will read / write all data from the `./data` directory.
 
@@ -84,7 +84,7 @@ Testing your installation is dependent on a lot of factors:
 * The directory structure
 * Permissions that should be tested (read/write)
 
-But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a [provided script](test/test_http.py).  It will test both the read and write capabilities of the test setup.
+But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a [provided script](tests/test_http.py).  It will test both the read and write capabilities of the test setup.
 
 You will need to create a few directories in order for the test script to work.  First, create the `www` directory under `data`.
 
@@ -92,12 +92,20 @@ You will need to create a few directories in order for the test script to work. 
 
 Then, make the directory world readable (this is only a test, after all).  Not a great solution.  The token issuer will protect directories with the scopes (`scp`) attribute.
 
-    sudo chown 777 data/www/protected
+    sudo chmod 777 data/www/protected
 
 Next, run the script with the arguments of for your host.  This can be run on the same node running the docker container, or any other computer since the container has a public IP address.  Arguments and more help can be found with the `-h` argument.  Below is example arguments.
 
-    python tests/test_http.py "https://example.com/protected/stuff/blah" "write:/stuff" "read:/stuff"
+    python test_http.py "https://example.com/protected/stuff/blah" "write:/stuff" "read:/stuff"
 
 The script will retrieve a token from demo.scitokens.org with the scopes specified on the command line and attempt to write and read a 50MB file.
+
+
+Customizing the installation
+----------------------------
+
+The Docker image demo above uses SciTokens to protect a WebDav endpoint.  The NGINX configuration is also capable of protecting a WSGI interface with only minimal changes to the NGXIN configuration.
+
+An overwritten configuration will need to be 
 
 
