@@ -84,9 +84,9 @@ Testing your installation is dependent on a lot of factors:
 * The directory structure
 * Permissions that should be tested (read/write)
 
-But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a [provided script](test/test_http.py).  You will have to edit the script, near the top, with some values that pertain to your server.  You should only have to edit the hostname.
+But, if you used the default configuration above (which would leave your server open to read or write from anyone), then you can test it with a [provided script](test/test_http.py).  It will test both the read and write capabilities of the test setup.
 
-Also, you will need to create a few directories in order for the test script to work.  First, create the `www` directory under `data`.
+You will need to create a few directories in order for the test script to work.  First, create the `www` directory under `data`.
 
     sudo mkdir -p data/www/protected
 
@@ -94,6 +94,10 @@ Then, make the directory world readable (this is only a test, after all).  Not a
 
     sudo chown 777 data/www/protected
 
-Modify the test script with the hostname and scopes necessary.  At the least, you will need to modify the hostname.
+Next, run the script with the arguments of for your host.  This can be run on the same node running the docker container, or any other computer since the container has a public IP address.  Arguments and more help can be found with the `-h` argument.  Below is example arguments.
+
+    python tests/test_http.py "https://example.com/protected/stuff/blah" "write:/stuff" "read:/stuff"
+
+The script will retrieve a token from demo.scitokens.org with the scopes specified on the command line and attempt to write and read a 50MB file.
 
 
