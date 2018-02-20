@@ -54,7 +54,7 @@ def flask_listener():
         if 'jti' in token._claims:
             logging.error("Failed to authenticate SciToken ID {0} because {1}".format(token['jti'], message))
         else:
-            logging.error("Failed to authenticate SciToken because {1}".format(message))
+            logging.error("Failed to authenticate SciToken because {0}".format(message))
         return message, 403
     
 
