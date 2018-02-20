@@ -10,7 +10,8 @@ Requirements
 ------------
 
 * Public Hostname
-* Port 80 and / or 443
+* Port 80 and / or 443 open
+* (For Docker) Ability to run small docker image
 
 Authorizer configuration
 ------------------------
