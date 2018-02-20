@@ -71,7 +71,7 @@ A [NGINX-SciTokens](https://hub.docker.com/r/scitokens/nginx-scitokens/) Docker 
 
 From the command line, the command would be:
 
-    sudo docker run --net=host -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data scitokens/nginx-scitokens
+    sudo docker run --privileged --net=host -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data scitokens/nginx-scitokens
     
 In this command, it would expect the LetsEncrypt command from before to be executed.  The certificates should be in `./certs`.  Further, it will read / write all data from the `./data` directory.
 
