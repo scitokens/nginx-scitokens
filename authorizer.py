@@ -123,11 +123,14 @@ def config(fname):
         print "Configured token access for %s (issuer %s): %s" % (section, issuer, str(issuer_info))
     
     global g_global_audience
-    g_global_audience = cp.get("Global", "audience")
-    if ',' in g_global_audience:
-        # Split the audience list
-        g_global_audience = re.split("\s*,\s*", g_global_audience)
-        print g_global_audience
+    if 'audience_json' in cp.options("Global"):
+        # Read in the audience as json.  Hopefully it's in list format or a string
+        g_global_audience = json.loads(cp.options("Global", "audience_json"))
+    elif 'audience' in cp.options("Global"):
+        g_global_audience = cp.get("Global", "audience")
+        if ',' in g_global_audience:
+            # Split the audience list
+            g_global_audience = re.split("\s*,\s*", g_global_audience)
     
 
 
