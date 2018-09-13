@@ -6,7 +6,7 @@ RUN apt-get update && apt-get -y install python-dev build-essential python-pip c
 WORKDIR /app
 
 COPY . /app
-RUN pip install -U pip && pip --no-cache-dir install --upgrade pip && pip --no-cache-dir install -r /app/requirements.txt
+RUN pip --no-cache-dir install -r /app/requirements.txt
 
 COPY configs/authorizer.cfg /etc/scitokens-auth/authorizer.cfg
 COPY configs/nginx.conf /etc/nginx/nginx.conf
