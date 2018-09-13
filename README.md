@@ -106,6 +106,8 @@ Customizing the installation
 
 The Docker image demo above uses SciTokens to protect a WebDav endpoint.  The NGINX configuration is also capable of protecting a WSGI interface with only minimal changes to the NGXIN configuration.
 
-An overwritten configuration will need to be 
+An overwritten configuration will need to be volume mounted over the existing configuration.  An additional volume will need to be added to the `docker run` command in the **Running from Docker** section.  The additional option is `-v authorizer.cfg:/etc/scitokens-auth/authorizer.cfg`.  The new command line would be (long):
+
+    sudo docker run --privileged -p 443:443 -p 80:80 -v `pwd`/certs:/etc/letsencrypt -v `pwd`/data:/data -v authorizer.cfg:/etc/scitokens-auth/authorizer.cfg scitokens/nginx-scitokens
 
 
