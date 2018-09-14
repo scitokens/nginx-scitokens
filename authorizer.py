@@ -126,7 +126,7 @@ def config(fname):
     global g_global_audience
     if 'audience_json' in cp.options("Global"):
         # Read in the audience as json.  Hopefully it's in list format or a string
-        g_global_audience = json.loads(cp.options("Global", "audience_json"))
+        g_global_audience = json.loads(cp.get("Global", "audience_json"))
     elif 'audience' in cp.options("Global"):
         g_global_audience = cp.get("Global", "audience")
         if ',' in g_global_audience:
