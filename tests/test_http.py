@@ -34,7 +34,8 @@ def main():
     
     data = json.dumps({
             'payload': json.dumps(demo_json['payload']),
-            'header': json.dumps(demo_json['header'])
+            'header': json.dumps(demo_json['header']),
+            'algorithm': 'RS256'
             })
     
     # Set the header so that cloudflare lets it through
